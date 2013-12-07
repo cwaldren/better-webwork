@@ -1,40 +1,60 @@
-var $eq = $("#eqEditorDiv");
+//Handy exists() function
+jQuery.fn.exists = function(){return this.length>0;}
 
-if ($eq.length != 0)
-{
-	var topOffset = 0;
-	var leftOffset = 0;
-	var $codeshard = $(".codeshard");
-	//$eq.fadeTo(0,0);
-
-	$("#openEqEditor").css({"width":"23px", "height":"23px"})
-	$codeshard.css({"position":"relative", "z-index":4});
-	$codeshard.mousedown(function(){
-		if(!$(this).is(":focus")) {
-		//$eq.fadeTo(0,0);
-
-		setTimeout(function(){
-		topOffset = parseInt($eq.css("top")) + 8;
-		leftOffset = parseInt($eq.css("left")) - 7;
-		$eq.css({"top":topOffset+"px", "left":leftOffset+"px"})
-		$eq.show()
-		//$eq.fadeTo(1,200)
-		}, 0)
-	}
-	});
-
-	$codeshard.blur(function(){$eq.hide()})
-	$eq.hover(function(){
-		$eq.stop().animate({left: leftOffset + 10})
-	}, function(){
-		$eq.stop().animate({left: leftOffset})
-	})
+$(document).ready(function() {
+	//Remove pointless pi button
+	var $eq = $("#eqEditorDiv");
+	$eq.remove();
 
 
 
+
+    //Calculate the score
+    doScore();
+    
+})
+
+var doScore = function() {
+
+		//Total questions on the page
+		var totalQuestions = 0;
+
+		//Get num of questions
+		var enumeratedQuestions = new Array();
+		var $questions = $("input[id^='AnSwEr']")
+		for (var i = 0; i < $questions.length; i++)  {
+			var id = parseInt($questions.eq(i).attr("id").substr(6, 10));
+			enumeratedQuestions[id] = true;
+		}
+
+		//Set the total questions to the enum q length
+		totalQuestions = enumeratedQuestions.length - 1;
+		console.log(totalQuestions)
+
+		//Now, find the unanswered questions amount from the text
+		var resultsAlertIndex = $(".resultsAlert").text().indexOf("of");
+		var unansweredQuestions = parseInt($(".resultsAlert").text().substr(0, resultsAlertIndex));
+
+		var text = $(".scoreSummary p").text();
+		var begin = text.indexOf("of") + 3;
+		var end = text.indexOf("%");
+		var scorePercent = parseInt(text.substr(begin, end-begin));
+
+		var result = Math.round(totalQuestions * (scorePercent / 100));
+	
+		if (!isNaN(result)) {
+			//Iffy math
+			var possibleQuestions = totalQuestions - result;
+			console.log("and the possible questions are " + possibleQuestions)
+			var wrongQuestions = possibleQuestions - unansweredQuestions;
+			console.log("which means the wrong questions are " + wrongQuestions)
+			$(".resultsAlert").append("<br>Questions wrong: " + wrongQuestions + " out of the " + (totalQuestions - unansweredQuestions) + " answered.");
+		}		
 }
 
 
+
+//magic?
 $table = $("table[border=1]");
 $("form").attr("autocomplete", "off");
 $firstRow = $table.find("tr").eq(0).find("td");
